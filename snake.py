@@ -1,5 +1,4 @@
 import pygame, random
-
 pygame.init()
 
 WINDOW_WIDTH = 600
@@ -58,7 +57,7 @@ apple_rect = pygame.draw.rect(display_surface, RED, apple_coord)
 head_coord = (head_x, head_y, SNAKE_SIZE, SNAKE_SIZE)
 head_rect = pygame.draw.rect(display_surface, GREEN, head_coord)
 
-body_coords = ()
+body_coords = []
 
 # The main game loop
 running = True
@@ -118,6 +117,7 @@ def reset_game_after_game_over(event):
         body_coords = []
         snake_dx = 0
         snake_dy = 0
+        is_paused = False
 
 
 def check_end_game_after_game_over(event):
@@ -135,33 +135,24 @@ def check_game_over():
     global body_coords
     global running
     global is_paused
-    if head_rect.left < 0 or head_rect.right > WINDOW_WIDTH or head_rect.top < 0 or head_rect.bottom > WINDOW_HEIGHT:
-        running = False
+    if head_rect.left < 0 or head_rect.right > WINDOW_WIDTH or head_rect.top < 0 or head_rect.bottom > WINDOW_HEIGHT or head_coord in body_coords:
+        display_surface.blit(game_over_text, game_over_rect)
+        display_surface.blit(continue_text, continue_rect)
+        pygame.display.update()
         is_paused = True
-        display_game_over()
-    if head_coord in body_coords:
-        running = False
-        is_paused = True
-        display_game_over()
-    display_surface.blit(game_over_text, game_over_rect)
-    display_surface.blit(continue_text, continue_rect)
-    pygame.display.update()
-
-    while is_paused:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                is_paused = False
-            elif event.type == pygame.KEYDOWN:
+        while is_paused:
+            for event in pygame.event.get():
                 reset_game_after_game_over(event)
+                check_end_game_after_game_over(event)
 
 
 def check_collisions():
     global score, apple_x, apple_y, apple_coord, body_coords
     if head_rect.colliderect(apple_rect):
-        score = += 1
+        score += 1
         pick_up_sound.play()
         apple_x = random.randint(0, WINDOW_WIDTH - SNAKE_SIZE)
+        apple_y = random.randint(0, WINDOW_HEIGHT - SNAKE_SIZE)
         apple_coord = (apple_x, apple_y, SNAKE_SIZE, SNAKE_SIZE)
         body_coords.append(head_coord)
 
@@ -171,13 +162,14 @@ def blit_hud():
     display_surface.blit(score_text, score_rect)
 
 def blit_assets():
-    body_coords:
-    pygame.draw.rect(display_surface, DARKGREEN, body)
+    global head_rect, apple_rect
+    for body in body_coords:
+        pygame.draw.rect(display_surface, DARKGREEN, body)
     head_rect = pygame.draw.rect(display_surface, GREEN, head_coord)
     apple_rect = pygame.draw.rect(display_surface, RED, apple_coord)
 
 def update_display_and_tick_clock():
-    pygame.display.update():
+    pygame.display.update()
     clock.tick(FPS)
 
 
